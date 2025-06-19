@@ -14,6 +14,8 @@ contract CertificateRegistry {
 
     // Mapping pour stocker les certificats par propriétaire
     mapping(address => string[]) public ownerCertificates;
+    // Liste globale des hashes
+    string[] public allHashes;
 
     // Événements pour les logs
     event CertificateRegistered(string indexed hash, address indexed owner, uint256 timestamp);
@@ -51,6 +53,9 @@ contract CertificateRegistry {
 
         // Émettre l'événement
         emit CertificateRegistered(hash, msg.sender, block.timestamp);
+        // Ajouter à la liste globale
+        allHashes.push(hash);
+
     }
 
     /**
@@ -132,4 +137,28 @@ contract CertificateRegistry {
     function getCertificateCount(address owner) public view returns (uint256 count) {
         return ownerCertificates[owner].length;
     }
+    function getAllCertificates() public view returns (string[] memory, address[] memory) {
+    uint256 count = 0;
+    for (uint256 i = 0; i < allHashes.length; i++) {
+        if (certificates[allHashes[i]].exists) {
+            count++;
+        }
+    }
+
+    string[] memory validHashes = new string[](count);
+    address[] memory owners = new address[](count);
+    uint256 index = 0;
+
+    for (uint256 i = 0; i < allHashes.length; i++) {
+        if (certificates[allHashes[i]].exists) {
+            validHashes[index] = allHashes[i];
+            owners[index] = certificates[allHashes[i]].owner;
+            index++;
+        }
+    }
+
+    return (validHashes, owners);
 }
+
+}
+ 
